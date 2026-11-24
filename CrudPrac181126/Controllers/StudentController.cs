@@ -18,9 +18,9 @@ namespace CrudPrac181126.Controllers
 
         [HttpGet("GetStudentDetails")]
 
-        public async Task<IActionResult> GetStudentDetails()
+        public async Task<IActionResult> GetStudentDetails([FromQuery]FilterStudentDto filterdto)
         {
-            var studentDetails = await _studentRepository.GetAllStudentsAsync();
+            var studentDetails = await _studentRepository.GetAllStudentsAsync(filterdto);
             return Ok(studentDetails);
         }
 
