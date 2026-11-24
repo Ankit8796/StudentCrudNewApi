@@ -3,6 +3,7 @@ using CrudPrac181126.Dtos;
 using CrudPrac181126.Entity;
 using CrudPrac181126.Reopository.Interface;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace CrudPrac181126.Reopository
 {
@@ -79,9 +80,9 @@ namespace CrudPrac181126.Reopository
             };
         }
 
-        public async Task<List<StudentDetailsDto>> GetAllStudentsAsync()
+        public async Task<PagedResult<StudentDetailsDto>> GetAllStudentsAsync(FilterStudentDto filter)
         {
-           var studentData=await _dbContext.Students.Where(s=>s.IsActive==true&&s.IsDeleted==false).Select(s => new StudentDetailsDto
+            var studentData =  _dbContext.Students.Where(s => s.IsActive == true && s.IsDeleted == false).Select(s => new StudentDetailsDto
             {
                 StudentId = s.StudentId,
                 FirstName = s.FirstName,
@@ -90,9 +91,37 @@ namespace CrudPrac181126.Reopository
                 PhoneNumber = s.PhoneNumber,
                 Gender = s.Gender,
                 DateOfBirth = s.DateOfBirth
-            }).ToListAsync();
+            });
 
-            return studentData;
+            var pageSize = 10;
+            var totalCount = await studentData.CountAsync();
+
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+            var pageNumber = filter.PageNumber <= 0 ? 1 : filter.PageNumber;
+
+            if (pageNumber > totalPages)
+            {
+                if (totalPages == 0)
+                {
+                    pageNumber = 1;
+                }
+                else
+                {
+                    pageNumber = totalPages;
+                }
+            }
+
+            var pagedData = await studentData.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            return new PagedResult<StudentDetailsDto>
+            {
+                Data = pagedData,
+                TotalRecords = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalPages = totalPages
+            };
+
         }
 
         public async Task<ReturnMessageDto> UpdateStudentAsync(StudentUpdateDto dto)

@@ -4,7 +4,7 @@ namespace CrudPrac181126.Reopository.Interface
 {
     public interface IStudentRepository
     {
-        Task<List<StudentDetailsDto>> GetAllStudentsAsync();
+        Task<PagedResult<StudentDetailsDto>>  GetAllStudentsAsync(FilterStudentDto filter);
 
         Task<ReturnMessageDto> CreateStudentAsync(StudentCreateDto studentCreateDto);
 
